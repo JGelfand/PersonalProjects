@@ -1,10 +1,19 @@
 //Written by Joseph Gelfand
 var lines= [];
-function properDisplay(text)
+var displayBox1 = null;//results of a solve attempt; also displays messages from parsing
+var displayBox2 = null;//The currently parsed system (Not yet implemented)
+function configDisplay(element1, element2)
 {
-  //OVERLOAD ME!!!!!!!!!
-  //REALLYYYYYYYYY!!!
-  console.log(text);
+  if(element1!=null){displayBox1 = document.getElementById(element1);}
+  if(element2!=null){displayBox2 = document.getElementById(element2);}
+}
+
+function properDisplay(text, box)
+{
+  if(box == null){console.log(text);}
+  else{
+    box.value = text;
+  }
 }
 function divToMul(match, p1, offset, string)
 {
@@ -82,12 +91,12 @@ function ParseTerm(myTerm)
 {
   if(countOccurences(myTerm, "[a-zA-Z]")>1)
   {
-    properDisplay("ERR: term contains multiple variables.\nTerm = "+myTerm);
+    properDisplay("ERR: term contains multiple variables.\nTerm = "+myTerm, displayBox1);
     return(null);
   }
   if(countOccurences(myTerm, "[()/]")!=0)
   {
-    properDisplay("ERR: invalid term (probably due to division by a variable). \nTerm = "+myTerm);
+    properDisplay("ERR: invalid term (probably due to division by a variable). \nTerm = "+myTerm, displayBox1);
     return(null);
   }
   myTerm = replaceAll(myTerm, new RegExp("([a-zA-Z])\\*((?:"+num+"\\*)*"+num+")(?!\\*)"), "$2*$1");
@@ -139,13 +148,13 @@ function parse(line)
   closeNum = countOccurences(equ, "\\)");
   if(openNum!=closeNum)
   {
-    if(openNum>closeNum){properDisplay("ERR: missing \")\"");}
-    else{properDisplay("ERR: missing \"(\"");}
+    if(openNum>closeNum){properDisplay("ERR: missing \")\"", displayBox1);}
+    else{properDisplay("ERR: missing \"(\"", displayBox1);}
     return;
   }
   if(equ.match(new RegExp("(?!"+term+"|^|$|[+\\-/*()=])"))!= null)
   {
-    properDisplay("ERR: invalid character! (valid chars are +,-,/,*,(,),=, any letter, and numbers)");
+    properDisplay("ERR: invalid character! (valid chars are +,-,/,*,(,),=, any letter, and numbers)", displayBox1);
     return;
   }
   equ = replaceAll(equ, new RegExp("[/]("+num+")"), divToMul);
@@ -182,7 +191,7 @@ function parse(line)
     console.log(newline[i].id+", " + String(newline[i].value));
   }*/
   lines.push(newline);
-  properDisplay("Equation added to system: "+line);
+  properDisplay("Equation added to system: "+line, displayBox1);
 }
 function genMat()//generate a 2d matrix from lines[]
 {
@@ -435,10 +444,11 @@ function displayNicely(equns, ids)
   {
     nice = "WARNING: Your system yielded a false statement.\n"+nice;
   }
-  properDisplay(nice);
+  properDisplay(nice, displayBox1);
+  return(nice);
 }
-parse("5+(x+3))+2y +2= 14");
-parse("y+x+3=6");
-//var test = genMat();
-//displayNicely(toRREF(test.values), test.ids)
-//console.log(toRREF([[1,2,3,1],[4,5,6,1], [1,3,2,4]]));
+function solveLinear()
+{
+  var data = genMat();
+  displayNicely(toRREF(data.values),data.ids);
+}
