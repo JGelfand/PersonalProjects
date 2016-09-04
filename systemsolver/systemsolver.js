@@ -249,7 +249,7 @@ function nextPivot(matIn, lastpiv, down)
   var maxR=lastpiv[0]+way;
   var height = matIn.length;
   var width = matIn[0].length;
-  if(((c==width||maxR==height)&&down)||((c==-1||maxR==-1)&&!down))
+  if(((maxC==width||maxR==height)&&down)||((maxC==-1||maxR==-1)&&!down))
   {
     //console.log("no good pivot, returning null");
     return(null);
@@ -372,22 +372,24 @@ function displayNicely(equns, ids)
     var pivotFound =false;
     for(i2=0; i2<equns[0].length;i2++)
     {
-      if(ids[i2]=="num")
+      if(!pivotFound&&equns[i1][i2]!=0&&ids[i2]!="num")
       {
-        nice = nice.slice(0,-3)+" = "+equns[i1][i2]+"\n";
+        pivotFound = true;
+        nice = nice+ids[i2]+" = "
+      }
+      else if(ids[i2]=="num")
+      {
+        if(nice.charAt(nice.length-1)=="\n"||nice.length==0)
+        {
+          nice = nice+"0 = ";
+        }
+        nice = nice +equns[i1][i2]+"\n";
       }
       else if(equns[i1][i2]!=0)
       {
-        if(equns[i1][i2]<0)
-        {
-          nice= nice.slice(0,-3)+" - "
-          if(equns[i1][i2]==-1){nice = nice+ids[i2]+" + ";}
-          else{nice = nice + (-1*equns[i1][i2])+ids[i2]+" + ";}
-        }
-        else {
-          if(equns[i1][i2]==1){nice=nice+ids[i2]+" + ";}
-          else {nice = nice + equns[i1][i2]+ids[i2]+" + ";}
-        }
+        if(equns[i1][i2]==-1){nice = nice+ids[i2]+" + ";}
+        else if(equns[i1][i2]==1){nice = nice + "-"+ids[i2]+" + ";}
+        else{nice = nice + (-1*equns[i1][i2])+ids[i2]+" + ";}
       }
     }
   }
