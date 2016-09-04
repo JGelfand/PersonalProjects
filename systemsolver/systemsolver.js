@@ -1,5 +1,11 @@
 //Written by Joseph Gelfand
 var lines= [];
+function properDisplay(text)
+{
+  //OVERLOAD ME!!!!!!!!!
+  //REALLYYYYYYYYY!!!
+  console.log(text);
+}
 function divToMul(match, p1, offset, string)
 {
   var divisor = Number(p1);
@@ -17,8 +23,12 @@ function combineNums(match, p1, p2, p3, p4,  offset, string)
   else if (p3 == "/"){toreturn = n1/n2;}
   return(p1+toreturn);
 }
-var num ="(?:\\d*\\.\\d+|\\d+)(?!\\d)"
-var term = "(?:[+\\-]?(?:(?:"+num+")*[a-zA-Z]|"+num+")[/*])*(?:\\d*[a-zA-Z]|"+num+")(?=[+\\-]|$|[*+\\-/]\\(|[)=])"
+function countOccurences(str, substr)
+{
+  return((str.match(new RegExp(substr, "g"))||[]).length)
+}
+var num ="(?:\\d*\\.\\d+|\\d+)(?!\\d)";
+var term = "(?:[+\\-]?(?:(?:"+num+")*[a-zA-Z]|"+num+")[/*])*(?:\\d*[a-zA-Z]|"+num+")(?=[+\\-]|$|[*+\\-/]\\(|[)=])";
 function addToLine(myTerm, myLine, left)//variables count totals on left, constants on right
 {
   var myId;
@@ -70,6 +80,16 @@ function addToLine(myTerm, myLine, left)//variables count totals on left, consta
 }
 function ParseTerm(myTerm)
 {
+  if(countOccurences(myTerm, "[a-zA-Z]")>1)
+  {
+    properDisplay("ERR: term contains multiple variables.\nTerm = "+myTerm);
+    return(null);
+  }
+  if(countOccurences(myTerm, "[()/]")!=0)
+  {
+    properDisplay("ERR: invalid term (probably due to division by a variable). \nTerm = "+myTerm);
+    return(null);
+  }
   myTerm = replaceAll(myTerm, new RegExp("([a-zA-Z])\\*((?:"+num+"\\*)*"+num+")(?!\\*)"), "$2*$1");
   myTerm = replaceAll(myTerm, new RegExp("("+num+")\\*("+num+")"),
   function(match, p1, p2, offset, blah){return(String(Number(p1)*Number(p2)));});
@@ -115,6 +135,19 @@ function parse(line)
 {
   //console.log("HI")
   var equ = replaceAll(line, /\s/, "");
+  openNum= countOccurences(equ, "\\(");
+  closeNum = countOccurences(equ, "\\)");
+  if(openNum!=closeNum)
+  {
+    if(openNum>closeNum){properDisplay("ERR: missing \")\"");}
+    else{properDisplay("ERR: missing \"(\"");}
+    return;
+  }
+  if(equ.match(new RegExp("(?!"+term+"|^|$|[+\\-/*()=])"))!= null)
+  {
+    properDisplay("ERR: invalid character! (valid chars are +,-,/,*,(,),=, any letter, and numbers)");
+    return;
+  }
   equ = replaceAll(equ, new RegExp("[/]("+num+")"), divToMul);
   equ = replaceAll(equ, /((?:\d*[a-z|A-Z]|\d+))\(/, "$1*(");//x(->x*(
   equ = replaceAll(equ, new RegExp("(\\([^()]*\\))("+term+")"), "$2*$1");
@@ -133,18 +166,23 @@ function parse(line)
   currSideTerms = sides[0].split(/(?=[+\-])/);
   for(i = 0;i<currSideTerms.length;i++)
   {
-    addToLine(ParseTerm(currSideTerms[i]),newline,true);
+    var newTerm = ParseTerm(currSideTerms[i]);
+    if(newTerm==null){return;}
+    addToLine(newTerm,newline,true);
   }
   currSideTerms = sides[1].split(/(?=[+\-])/);
   for(i = 0;i<currSideTerms.length;i++)
   {
-    addToLine(ParseTerm(currSideTerms[i]),newline,false);
+    var newTerm = ParseTerm(currSideTerms[i]);
+    if(newTerm==null){return;}
+    addToLine(newTerm,newline,false);
   }
   /*for(i=0;i<newline.length;i++)
   {
     console.log(newline[i].id+", " + String(newline[i].value));
   }*/
   lines.push(newline);
+  properDisplay("Equation added to system: "+line);
 }
 function genMat()//generate a 2d matrix from lines[]
 {
@@ -393,10 +431,14 @@ function displayNicely(equns, ids)
       }
     }
   }
-  return(nice);
+  if(nice.search(/[\n\^]0 = 1/)!=-1)
+  {
+    nice = "WARNING: Your system yielded a false statement.\n"+nice;
+  }
+  properDisplay(nice);
 }
-parse("5+(x+3)+2y +2= 14");
+parse("5+(x+3))+2y +2= 14");
 parse("y+x+3=6");
-var test = genMat();
-console.log(displayNicely(toRREF(test.values), test.ids))
+//var test = genMat();
+//displayNicely(toRREF(test.values), test.ids)
 //console.log(toRREF([[1,2,3,1],[4,5,6,1], [1,3,2,4]]));
