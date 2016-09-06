@@ -1,19 +1,40 @@
 //Written by Joseph Gelfand
 var lines= [];
+function clearSystem()
+{
+  lines = [];
+}
+
 var displayBox1 = null;//results of a solve attempt; also displays messages from parsing
 var displayBox2 = null;//The currently parsed system (Not yet implemented)
 function configDisplay(element1, element2)
 {
   if(element1!=null){displayBox1 = document.getElementById(element1);}
-  if(element2!=null){displayBox2 = document.getElementById(element2);}
+  if(element2!=null)
+  {
+    displayBox2 = document.getElementById(element2);
+    displaySystem();
+  }
 }
-
 function properDisplay(text, box)
 {
   if(box == null){console.log(text);}
   else{
     box.value = text;
   }
+}
+function displaySystem()
+{
+  var info = "System:\n";
+  for(i1=0;i1<lines.length;i1++)
+  {
+    for(i2=1;i2<lines[i1].length;i2++)
+    {
+      info = info + lines[i1][i2].value+lines[i1][i2].id+" + ";
+    }
+    info = info.slice(0,-2)+"= "+lines[i1][0].value+"\n";
+  }
+  properDisplay(info, displayBox2);
 }
 function divToMul(match, p1, offset, string)
 {
@@ -94,24 +115,20 @@ function ParseTerm(myTerm)
     properDisplay("ERR: term contains multiple variables.\nTerm = "+myTerm, displayBox1);
     return(null);
   }
-  if(countOccurences(myTerm, "[()/]")!=0)
+  if(countOccurences(myTerm, "[/]")!=0)
   {
     properDisplay("ERR: invalid term (probably due to division by a variable). \nTerm = "+myTerm, displayBox1);
     return(null);
   }
-  myTerm = replaceAll(myTerm, new RegExp("([a-zA-Z])\\*((?:"+num+"\\*)*"+num+")(?!\\*)"), "$2*$1");
-  myTerm = replaceAll(myTerm, new RegExp("("+num+")\\*("+num+")"),
+  myTerm = replaceAll(myTerm, "([a-zA-Z])\\*((?:"+num+"\\*)*"+num+")(?!\\*)", "$2*$1");
+  myTerm = replaceAll(myTerm,"("+num+")\\*("+num+")",
   function(match, p1, p2, offset, blah){return(String(Number(p1)*Number(p2)));});
   return(myTerm);
 }
 function replaceAll(line, regex, replacement)
 {
-  var lastline;
-  while(lastline!=line)
-  {
-    lastline = line;
-    line = line.replace(regex, replacement);
-  }
+  if(typeof line == "string"){line = line.replace(new RegExp(regex,"g"), replacement);}
+  else{line=line.replace(regex, replacement);}
   return(line);
 }
 function expand(line)//a*(b+c)->a*b+a*(c)||a*(c)->a*c()||a*c()->a*c
@@ -129,10 +146,10 @@ function expand(line)//a*(b+c)->a*b+a*(c)||a*(c)->a*c()||a*c()->a*c
       //handle a+/-(b+/-...)-->a+/-b+/-(...)
       newline = newline.replace(new RegExp("("+term+"[+\\-])\\(("+term+"[+\\-])"), "$1$2(");
     }
-    newline =replaceAll(newline, new RegExp("([(+\\-]|^)("+num+")([+\\-*/])("+num+")(?=[+\\-)]|$)"), combineNums);//combine numbers
+    newline =replaceAll(newline, "([(+\\-]|^)("+num+")([+\\-*/])("+num+")(?=[+\\-)]|$)", combineNums);//combine numbers
     //handle the artifacts at the end of the previous iterations
-    newline = replaceAll(newline, new RegExp("("+term+"[+\\-/*])\\(("+term+")\\)"), "$1$2");
-    newline = replaceAll(newline, new RegExp("[/]("+num+")"), divToMul);//if we end up getting a/(num), replace with a*(1/num)
+    newline = replaceAll(newline, "("+term+"[+\\-/*])\\(("+term+")\\)", "$1$2");
+    newline = replaceAll(newline, "[/]("+num+")", divToMul);//if we end up getting a/(num), replace with a*(1/num)
     if(newline ==lastline)
     {
       good = true;
@@ -143,7 +160,7 @@ function expand(line)//a*(b+c)->a*b+a*(c)||a*(c)->a*c()||a*c()->a*c
 function parse(line)
 {
   //console.log("HI")
-  var equ = replaceAll(line, /\s/, "");
+  var equ = replaceAll(line, /\s/g, "");
   openNum= countOccurences(equ, "\\(");
   closeNum = countOccurences(equ, "\\)");
   if(openNum!=closeNum)
@@ -157,13 +174,13 @@ function parse(line)
     properDisplay("ERR: invalid character! (valid chars are +,-,/,*,(,),=, any letter, and numbers)", displayBox1);
     return;
   }
-  equ = replaceAll(equ, new RegExp("[/]("+num+")"), divToMul);
-  equ = replaceAll(equ, /((?:\d*[a-z|A-Z]|\d+))\(/, "$1*(");//x(->x*(
-  equ = replaceAll(equ, new RegExp("(\\([^()]*\\))("+term+")"), "$2*$1");
-  equ = replaceAll(equ, new RegExp("("+num+")([A-Za-z])"), "$1*$2");
-  equ= replaceAll(equ, new RegExp("([+\\-(]|^)([a-zA-Z])"), "$11*$2");
+  equ = replaceAll(equ, "[/]("+num+")", divToMul);
+  equ = replaceAll(equ, /((?:\d*[a-z|A-Z]|\d+))\(/g, "$1*(");//x(->x*(
+  equ = replaceAll(equ,"(\\([^()]*\\))("+term+")", "$2*$1");
+  equ = replaceAll(equ, "("+num+")([A-Za-z])", "$1*$2");
+  equ= replaceAll(equ, "([+\\-(=]|^)([a-zA-Z])", "$11*$2");
   var expanded = expand(equ);
-  //console.log("expanded = "+expanded);
+  console.log("expanded = "+expanded);
   var newline = [];
   var numTerm = new Object();
   numTerm.id = "num";
@@ -191,7 +208,8 @@ function parse(line)
     console.log(newline[i].id+", " + String(newline[i].value));
   }*/
   lines.push(newline);
-  properDisplay("Equation added to system: "+line, displayBox1);
+  properDisplay("Equation added to system", displayBox1);
+  displaySystem();
 }
 function genMat()//generate a 2d matrix from lines[]
 {

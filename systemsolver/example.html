@@ -9,13 +9,16 @@
       <td><button type="button" onclick='parse(document.getElementById("input").value);'>Parse</button></td>
     </tr>
     <tr>
-      <td><textarea id="displayArea1" cols=50 rows=10 readonly></textarea></td>
+      <td><textarea id="displayArea1" cols=50 rows=7 readonly></textarea></td>
+      <td><textarea id="displayArea2" cols=50 rows=7 readonly></textarea></td>
+    </tr>
+    <tr>
+      <td><button type="button" onclick="solveLinear()">Solve</button></td>
+      <td><button type="button" onclick="clearSystem()">Reset</button></td>
     </tr>
   </table>
-  <br>
-  <button type = "button" onclick="solveLinear()">Solve</button>
   <script type="text/javascript">
-    configDisplay("displayArea1", null);
+    configDisplay("displayArea1", "displayArea2");
   </script>
 </body>
 </html>
