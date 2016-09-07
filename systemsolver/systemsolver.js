@@ -200,7 +200,8 @@ function parse(line)
     }
     return(msgLog);
   }
-  if(equ.match(new RegExp("(?!"+term+"|^|$|[+\\-/*()=])"))!= null)
+  //if(equ.match(new RegExp("(?!"+term+"|^|$|[+\\-/*()=])"))!= null)
+  if(equ.match(/(?!^|$|[a-zA-Z]|[0-9]|[+\-/*()=])/)!=null)
   {
     return("ERR: invalid character! (valid chars are +,-,/,*,(,),=, any letter, and numbers)");
   }
@@ -496,7 +497,7 @@ function displayNicely(equns, ids)
   }
   if(nice.search(/(?:[\n]|^)0 = 1/)!=-1)
   {
-    nice = "WARNING: Your contained a false or conflicting statement.\nThe results will be incorrect.\n"+nice;
+    nice = "WARNING: Your system contained a false or conflicting statement.\nThe results will be incorrect.\n"+nice;
   }
   properDisplay(nice, displayBox1);
   return(nice);
