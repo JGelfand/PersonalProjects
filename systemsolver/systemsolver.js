@@ -3,11 +3,14 @@ var lines= [];
 function clearSystem()
 {
   lines = [];
+  displaySystem();
+  properDisplay("System reset.", displayBox1);
 }
 
 var displayBox1 = null;//results of a solve attempt; also displays messages from parsing
 var displayBox2 = null;//The currently parsed system (Not yet implemented)
-function configDisplay(element1, element2)
+var inputBox = null;
+function configDisplay(element1, element2, element3)
 {
   if(element1!=null){displayBox1 = document.getElementById(element1);}
   if(element2!=null)
@@ -15,6 +18,7 @@ function configDisplay(element1, element2)
     displayBox2 = document.getElementById(element2);
     displaySystem();
   }
+  if(element3!=null){inputBox = document.getElementById(element3);}
 }
 function properDisplay(text, box)
 {
@@ -32,7 +36,17 @@ function displaySystem()
     {
       info = info + lines[i1][i2].value+lines[i1][i2].id+" + ";
     }
-    info = info.slice(0,-2)+"= "+lines[i1][0].value+"\n";
+    if(lines[i1].length==1)
+    {
+      if(lines[i1][0].value!=0)
+      {
+        properDisplay("Equation #"+(i1+1)+" yielded 0=1.\nIt has been removed from the system.", displayBox1);
+        lines =lines.splice(i1,1);
+        return;
+      }
+      info = info+"0 = 0\n"
+    }
+    else{info = info.slice(0,-2)+"= "+lines[i1][0].value+"\n";}
   }
   properDisplay(info, displayBox2);
 }
@@ -112,13 +126,13 @@ function ParseTerm(myTerm)
 {
   if(countOccurences(myTerm, "[a-zA-Z]")>1)
   {
-    properDisplay("ERR: term contains multiple variables.\nTerm = "+myTerm, displayBox1);
-    return(null);
+    var ERRDes = "ERR: term contains multiple variables.\nTerm = "+myTerm;
+    return(ERRDes);
   }
   if(countOccurences(myTerm, "[/]")!=0)
   {
-    properDisplay("ERR: invalid term (probably due to division by a variable). \nTerm = "+myTerm, displayBox1);
-    return(null);
+    var ERRDes = "ERR: invalid term (probably due to division by a variable). \nTerm = "+myTerm;
+    return(ERRDes);
   }
   myTerm = replaceAll(myTerm, "([a-zA-Z])\\*((?:"+num+"\\*)*"+num+")(?!\\*)", "$2*$1");
   myTerm = replaceAll(myTerm,"("+num+")\\*("+num+")",
@@ -165,14 +179,30 @@ function parse(line)
   closeNum = countOccurences(equ, "\\)");
   if(openNum!=closeNum)
   {
-    if(openNum>closeNum){properDisplay("ERR: missing \")\"", displayBox1);}
-    else{properDisplay("ERR: missing \"(\"", displayBox1);}
-    return;
+    var ERRDes;
+    if(openNum>closeNum){ERRDes = "ERR: missing \")\"";}
+    else{ERRDes = "ERR: missing \"(\"";}
+    return(ERRDes);
+  }
+  var equalities = countOccurences(equ, "=");
+  if(equalities==0)
+  {
+    return("ERR: Equations must include '='.");
+  }
+  else if(equalities>1)
+  {
+    var msgLog = "";
+    equ=equ.split("=");
+    for(j=0;j<equ.length-1;j++)
+    {
+      var newEqu = equ[j]+"="+equ[j+1];
+      msgLog = msgLog+"Equation: "+newEqu+"\nResult: "+parse(equ[j]+"="+equ[j+1])+"\n";
+    }
+    return(msgLog);
   }
   if(equ.match(new RegExp("(?!"+term+"|^|$|[+\\-/*()=])"))!= null)
   {
-    properDisplay("ERR: invalid character! (valid chars are +,-,/,*,(,),=, any letter, and numbers)", displayBox1);
-    return;
+    return("ERR: invalid character! (valid chars are +,-,/,*,(,),=, any letter, and numbers)");
   }
   equ = replaceAll(equ, "[/]("+num+")", divToMul);
   equ = replaceAll(equ, /((?:\d*[a-z|A-Z]|\d+))\(/g, "$1*(");//x(->x*(
@@ -180,7 +210,7 @@ function parse(line)
   equ = replaceAll(equ, "("+num+")([A-Za-z])", "$1*$2");
   equ= replaceAll(equ, "([+\\-(=]|^)([a-zA-Z])", "$11*$2");
   var expanded = expand(equ);
-  console.log("expanded = "+expanded);
+  //console.log("expanded = "+expanded);
   var newline = [];
   var numTerm = new Object();
   numTerm.id = "num";
@@ -207,9 +237,15 @@ function parse(line)
   {
     console.log(newline[i].id+", " + String(newline[i].value));
   }*/
+  if((newline.length ==1)&&(newline[0].value!=0))
+  {
+    return("ERR: Equation yielded false statement");
+  }
+
   lines.push(newline);
-  properDisplay("Equation added to system", displayBox1);
+  if(inputBox!=null){properDisplay("", inputBox);}
   displaySystem();
+  return("Equation added to system");
 }
 function genMat()//generate a 2d matrix from lines[]
 {
@@ -458,9 +494,9 @@ function displayNicely(equns, ids)
       }
     }
   }
-  if(nice.search(/[\n\^]0 = 1/)!=-1)
+  if(nice.search(/(?:[\n]|^)0 = 1/)!=-1)
   {
-    nice = "WARNING: Your system yielded a false statement.\n"+nice;
+    nice = "WARNING: Your contained a false or conflicting statement.\nThe results will be incorrect.\n"+nice;
   }
   properDisplay(nice, displayBox1);
   return(nice);

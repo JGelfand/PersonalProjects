@@ -6,7 +6,7 @@
   <table>
     <tr>
       <td><textarea id="input" cols=50 rows=1></textarea></td>
-      <td><button type="button" onclick='parse(document.getElementById("input").value);'>Parse</button></td>
+      <td><button type="button" onclick='properDisplay(parse(document.getElementById("input").value),displayBox1);'>Add to system</button></td>
     </tr>
     <tr>
       <td><textarea id="displayArea1" cols=50 rows=7 readonly></textarea></td>
@@ -18,7 +18,7 @@
     </tr>
   </table>
   <script type="text/javascript">
-    configDisplay("displayArea1", "displayArea2");
+    configDisplay("displayArea1", "displayArea2","input");
   </script>
 </body>
 </html>
