@@ -157,6 +157,10 @@ function expand(line)//a*(b+c)->a*b+a*(c)||a*(c)->a*c()||a*c()->a*c
       lastline = newline;
       //handle a*(b+c) by doing a*(b+c+d+...+n)->a*b+a*(c+..+n). This eventually results in a*b+a*c+...+a*(n-1)+a*(n)
       newline = newline.replace(new RegExp("("+term+"[*])\\(("+term+"[+\\-])"), "$1$2$1(")
+      //+- or ++ ->- or +
+      newline = newline.replace(/\+([+\-])/g, "$1");
+      //-- -> +
+      newline = newline.replace(/--/g, "+");
       //handle a+/-(b+/-...)-->a+/-b+/-(...)
       newline = newline.replace(new RegExp("("+term+"[+\\-])\\(("+term+"[+\\-])"), "$1$2(");
     }
@@ -169,6 +173,7 @@ function expand(line)//a*(b+c)->a*b+a*(c)||a*(c)->a*c()||a*c()->a*c
       good = true;
     }
   }
+
   return(newline);
 }
 function parse(line)
@@ -201,7 +206,7 @@ function parse(line)
     return(msgLog);
   }
   //if(equ.match(new RegExp("(?!"+term+"|^|$|[+\\-/*()=])"))!= null)
-  if(equ.match(/(?!^|$|[a-zA-Z]|[0-9]|[+\-/*()=])/)!=null)
+  if(equ.match(/(?!^|$|[a-zA-Z]|[0-9.]|[+\-/*()=])/)!=null)
   {
     return("ERR: invalid character! (valid chars are +,-,/,*,(,),=, any letter, and numbers)");
   }
@@ -211,7 +216,7 @@ function parse(line)
   equ = replaceAll(equ, "("+num+")([A-Za-z])", "$1*$2");
   equ= replaceAll(equ, "([+\\-(=]|^)([a-zA-Z])", "$11*$2");
   var expanded = expand(equ);
-  //console.log("expanded = "+expanded);
+  console.log("expanded = "+expanded);
   var newline = [];
   var numTerm = new Object();
   numTerm.id = "num";
@@ -224,14 +229,14 @@ function parse(line)
   for(i = 0;i<currSideTerms.length;i++)
   {
     var newTerm = ParseTerm(currSideTerms[i]);
-    if(newTerm==null){return;}
+    if(newTerm.search("ERR")!=-1){return(newTerm);}
     addToLine(newTerm,newline,true);
   }
   currSideTerms = sides[1].split(/(?=[+\-])/);
   for(i = 0;i<currSideTerms.length;i++)
   {
     var newTerm = ParseTerm(currSideTerms[i]);
-    if(newTerm==null){return;}
+    if(newTerm.search("ERR")!=-1){return(newTerm);}
     addToLine(newTerm,newline,false);
   }
   /*for(i=0;i<newline.length;i++)
@@ -466,9 +471,15 @@ function toRREF(matrixIn)
   }
   return(currMatrix);
 }
+function round(num, digits)
+{
+  var rounded = Math.round(num*Math.pow(10,digits));
+  rounded = rounded/Math.pow(10, digits);
+  return(rounded);
+}
 function displayNicely(equns, ids)
 {
-  var nice=new String("");
+  var nice="";
   for(i1=0;i1<equns.length;i1++)
   {
     var pivotFound =false;
@@ -477,7 +488,7 @@ function displayNicely(equns, ids)
       if(!pivotFound&&equns[i1][i2]!=0&&ids[i2]!="num")
       {
         pivotFound = true;
-        nice = nice+ids[i2]+" = "
+        nice = nice+ids[i2]+" = ";
       }
       else if(ids[i2]=="num")
       {
@@ -485,13 +496,13 @@ function displayNicely(equns, ids)
         {
           nice = nice+"0 = ";
         }
-        nice = nice +equns[i1][i2]+"\n";
+        nice = nice +round(equns[i1][i2],4)+"\n";
       }
       else if(equns[i1][i2]!=0)
       {
         if(equns[i1][i2]==-1){nice = nice+ids[i2]+" + ";}
         else if(equns[i1][i2]==1){nice = nice + "-"+ids[i2]+" + ";}
-        else{nice = nice + (-1*equns[i1][i2])+ids[i2]+" + ";}
+        else{nice = nice + (round(-1*equns[i1][i2]),4)+ids[i2]+" + ";}
       }
     }
   }
@@ -504,6 +515,11 @@ function displayNicely(equns, ids)
 }
 function solveLinear()
 {
+  if(lines.length==0)
+  {
+    properDisplay("ERR: System is empty", displayBox1);
+    return;
+  }
   var data = genMat();
   displayNicely(toRREF(data.values),data.ids);
 }
