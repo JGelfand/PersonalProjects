@@ -63,7 +63,7 @@ function combineNums(match, p1, p2, p3, p4,  offset, string)
   var toreturn;
   if(p3 == "+"){toreturn=n1+n2;}
   else if (p3== "-"){toreturn = n1-n2;}
-  else if (p3 == "*"){toreturn= n2*n2;}
+  else if (p3 == "*"){toreturn= n1*n2;}
   else if (p3 == "/"){toreturn = n1/n2;}
   return(p1+toreturn);
 }
@@ -78,12 +78,11 @@ function addToLine(myTerm, myLine, left)//variables count totals on left, consta
   var myId;
   var myVal;
   var idMatch = myTerm.match(/[a-zA-Z]/);
-  //console.log(idMatch);
   if(idMatch===null){myId = "num";}
   else{myId= idMatch[0];}
   myVal=Number(myTerm.match(new RegExp(num))[0]);
+  //console.log("Term = "+myTerm+"\nValue = "+myVal);
   if(myTerm.search(/\-/)!=-1){myVal=myVal*-1;}
-  //console.log("myId = "+myId);
   for(i2=0;i2<myLine.length;i2++)
   {
     if((myLine[i2].id==myId)&&myId!="num")
@@ -92,10 +91,12 @@ function addToLine(myTerm, myLine, left)//variables count totals on left, consta
         {
           case true:
             myLine[i2].value+=myVal;
+            myLine[i2].value=round(myLine[i2].value, 15);
             return;
             break;
           case false:
             myLine[i2].value-=myVal;
+            myLine[i2].value=round(myLine[i2].value, 15);
             return;
             break;
         }
@@ -106,10 +107,12 @@ function addToLine(myTerm, myLine, left)//variables count totals on left, consta
         {
           case true:
             myLine[i2].value-=myVal;
+            myLine[i2].value=round(myLine[i2].value, 15);
             return;
             break;
           case false:
             myLine[i2].value+=myVal;
+            myLine[i2].value=round(myLine[i2].value, 15);
             return;
             break;
         }
@@ -154,17 +157,18 @@ function expand(line)//a*(b+c)->a*b+a*(c)||a*(c)->a*c()||a*c()->a*c
   while(!good){
     while(lastline!=newline)
     {
+      newline = newline.replace(/\+([+\-])/g, "$1");
+      //-- -> +
+      newline = newline.replace(/--/g, "+");
       lastline = newline;
       //handle a*(b+c) by doing a*(b+c+d+...+n)->a*b+a*(c+..+n). This eventually results in a*b+a*c+...+a*(n-1)+a*(n)
       newline = newline.replace(new RegExp("("+term+"[*])\\(("+term+"[+\\-])"), "$1$2$1(")
       //+- or ++ ->- or +
-      newline = newline.replace(/\+([+\-])/g, "$1");
-      //-- -> +
-      newline = newline.replace(/--/g, "+");
       //handle a+/-(b+/-...)-->a+/-b+/-(...)
       newline = newline.replace(new RegExp("("+term+"[+\\-])\\(("+term+"[+\\-])"), "$1$2(");
     }
-    newline =replaceAll(newline, "([(+\\-]|^)("+num+")([+\\-*/])("+num+")(?=[+\\-)]|$)", combineNums);//combine numbers
+    //console.log("partial expansion: "+newline);
+    newline =replaceAll(newline, "([(+\\-]|^)("+num+")([+\\-*/])("+num+")(?=[+\\-)=]|$)", combineNums);//combine numbers
     //handle the artifacts at the end of the previous iterations
     newline = replaceAll(newline, "("+term+"[+\\-/*])\\(("+term+")\\)", "$1$2");
     newline = replaceAll(newline, "[/]("+num+")", divToMul);//if we end up getting a/(num), replace with a*(1/num)
@@ -211,12 +215,14 @@ function parse(line)
     return("ERR: invalid character! (valid chars are +,-,/,*,(,),=, any letter, and numbers)");
   }
   equ = replaceAll(equ, "[/]("+num+")", divToMul);
-  equ = replaceAll(equ, /((?:\d*[a-z|A-Z]|\d+))\(/g, "$1*(");//x(->x*(
+  //equ = replaceAll(equ, /((?:\d*[a-z|A-Z]|\d+))\(/g, "$1*(");//x(->x*(
+  equ = replaceAll(equ, "("+num+"|[a-zA-Z])\\(", "$1*(");
   equ = replaceAll(equ,"(\\([^()]*\\))("+term+")", "$2*$1");
   equ = replaceAll(equ, "("+num+")([A-Za-z])", "$1*$2");
   equ= replaceAll(equ, "([+\\-(=]|^)([a-zA-Z])", "$11*$2");
+  //console.log("before expanded: "+equ);
   var expanded = expand(equ);
-  console.log("expanded = "+expanded);
+  //console.log("expanded: "+expanded);
   var newline = [];
   var numTerm = new Object();
   numTerm.id = "num";
@@ -245,7 +251,7 @@ function parse(line)
   }*/
   if((newline.length ==1)&&(newline[0].value!=0))
   {
-    return("ERR: Equation yielded false statement");
+    return("ERR: Equation yielded false statement\nValue= "+newline[0].value);
   }
 
   lines.push(newline);
