@@ -362,6 +362,7 @@ function matMult(left, right)
       for(i3=0;i3<leftCols;i3++)
       {
         newRow[i2]+=left[i1][i3]*right[i3][i2];
+        //newRow[i2]=round(newRow, 15);too math intensive with current round();
       }
     }
     returnMe.push(newRow);
@@ -521,7 +522,8 @@ function displayNicely(equns, ids)
     var pivotFound =false;
     for(i2=0; i2<equns[0].length;i2++)
     {
-      if(!pivotFound&&equns[i1][i2]!=0&&ids[i2]!="num")
+      var currEle =round(equns[i1][i2], 5);
+      if(!pivotFound&&currEle!=0&&ids[i2]!="num")
       {
         pivotFound = true;
         nice = nice+ids[i2]+" = ";
@@ -532,13 +534,13 @@ function displayNicely(equns, ids)
         {
           nice = nice+"0 = ";
         }
-        nice = nice +round(equns[i1][i2],4)+"\n";
+        nice = nice +currEle+"\n";
       }
-      else if(equns[i1][i2]!=0)
+      else if(currEle!=0)
       {
-        if(equns[i1][i2]==-1){nice = nice+ids[i2]+" + ";}
-        else if(equns[i1][i2]==1){nice = nice + "-"+ids[i2]+" + ";}
-        else{nice = nice + round((-1*equns[i1][i2]),4)+ids[i2]+" + ";}
+        if(currEle==-1){nice = nice+ids[i2]+" + ";}
+        else if(currEle==1){nice = nice + "-"+ids[i2]+" + ";}
+        else{nice = nice + round((-1*currEle),4)+ids[i2]+" + ";}
       }
     }
   }
