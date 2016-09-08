@@ -7,10 +7,12 @@
     <tr>
       <td><textarea id="input" cols=50 rows=1></textarea></td>
       <td><button type="button" onclick='properDisplay(parse(document.getElementById("input").value),displayBox1);'>Add to system</button></td>
+      <td><textarea id="removeBox" cols=3 rows=1></textarea></td>
+      <td><button type="button" onclick='clearSystem(document.getElementById("removeBox").value);'>Remove Line</button></td>
     </tr>
     <tr>
       <td><textarea id="displayArea1" cols=50 rows=7 readonly></textarea></td>
-      <td><textarea id="displayArea2" cols=50 rows=7 readonly></textarea></td>
+      <td colspan="3"><textarea id="displayArea2" cols=50 rows=7 readonly></textarea></td>
     </tr>
     <tr>
       <td><button type="button" onclick="solveLinear()">Solve</button></td>

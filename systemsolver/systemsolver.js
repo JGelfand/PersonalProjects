@@ -1,15 +1,43 @@
 //Written by Joseph Gelfand
 var lines= [];
-function clearSystem()
+function clearSystem(lineNum)
 {
-  lines = [];
-  displaySystem();
-  properDisplay("System reset.", displayBox1);
+  if(lineNum==null)
+  {
+    lines = [];
+    displaySystem();
+    properDisplay("System reset.", displayBox1);
+  }
+  else if(typeof lineNum=="number"&&lineNum!=NaN)
+  {
+    if(!lines[lineNum-1]){
+      properDisplay("Invalid line number!", displayBox1);
+      return;
+    }
+    lines.splice(lineNum-1,1);
+    displaySystem();
+    properDisplay("Equation #"+(lineNum)+" has been removed", displayBox1);
+  }
+  else if(typeof lineNum=="string")
+  {
+    if(lineNum==""){
+      properDisplay("Please enter a line number!")
+      return;
+    }
+    else
+    {
+      return(clearSystem(Number(lineNum)));
+    }
+  }
+  else
+  {
+    properDisplay("Requested line number is not a number!", displayBox1);
+  }
 }
 
 var displayBox1 = null;//results of a solve attempt; also displays messages from parsing
-var displayBox2 = null;//The currently parsed system (Not yet implemented)
-var inputBox = null;
+var displayBox2 = null;//The currently parsed system
+var inputBox = null;//The area the user types in. This is only to clear it after a successful parse.
 function configDisplay(element1, element2, element3)
 {
   if(element1!=null){displayBox1 = document.getElementById(element1);}
@@ -32,19 +60,21 @@ function displaySystem()
   var info = "System:\n";
   for(i1=0;i1<lines.length;i1++)
   {
+    info= info+"  "+(i1+1)+": ";
     for(i2=1;i2<lines[i1].length;i2++)
     {
       info = info + lines[i1][i2].value+lines[i1][i2].id+" + ";
     }
     if(lines[i1].length==1)
     {
-      if(lines[i1][0].value!=0)
+      /*if(lines[i1][0].value!=0)
       {
         properDisplay("Equation #"+(i1+1)+" yielded 0=1.\nIt has been removed from the system.", displayBox1);
         lines =lines.splice(i1,1);
+        displaySystem();
         return;
-      }
-      info = info+"0 = 0\n"
+      }*/ //probably bad practice to modify the system from something meant to display it.
+      info = info+"0 = "+lines[i1][0].value;
     }
     else{info = info.slice(0,-2)+"= "+lines[i1][0].value+"\n";}
   }
@@ -508,7 +538,7 @@ function displayNicely(equns, ids)
       {
         if(equns[i1][i2]==-1){nice = nice+ids[i2]+" + ";}
         else if(equns[i1][i2]==1){nice = nice + "-"+ids[i2]+" + ";}
-        else{nice = nice + (round(-1*equns[i1][i2]),4)+ids[i2]+" + ";}
+        else{nice = nice + round((-1*equns[i1][i2]),4)+ids[i2]+" + ";}
       }
     }
   }
