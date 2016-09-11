@@ -174,8 +174,14 @@ function ParseTerm(myTerm)
 }
 function replaceAll(line, regex, replacement)
 {
-  if(typeof line == "string"){line = line.replace(new RegExp(regex,"g"), replacement);}
-  else{line=line.replace(regex, replacement);}
+  if(typeof regex == "string"){regex = new RegExp(regex,"g");}
+  var compLine = line;
+  line=line.replace(regex, replacement);
+  while(compLine!=line)
+  {
+    compLine=line;
+    line = line.replace(regex, replacement);
+  }
   return(line);
 }
 function expand(line)//a*(b+c)->a*b+a*(c)||a*(c)->a*c()||a*c()->a*c
