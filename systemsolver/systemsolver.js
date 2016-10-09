@@ -74,7 +74,7 @@ function displaySystem()
         displaySystem();
         return;
       }*/ //probably bad practice to modify the system from something meant to display it.
-      info = info+"0 = "+lines[i1][0].value;
+      info = info+"0 = "+lines[i1][0].value+"\n";
     }
     else{info = info.slice(0,-2)+"= "+lines[i1][0].value+"\n";}
   }

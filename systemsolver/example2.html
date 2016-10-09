@@ -1,0 +1,21 @@
+<html>
+<head>
+<script src="interpretXML.js"></script>
+</head>
+<body>
+  <span id="sys">
+  </span>
+  <textarea id="log"></textarea>
+  <script type="text/javascript">
+    configDisplay("sys", "log");
+    var xmlLoader= new XMLHttpRequest();
+    xmlLoader.onreadystatechange= function (){
+      if (this.readyState == 4 && this.status == 200) {
+        toSys(xmlToTable(this));
+      }
+    }
+    xmlLoader.open("GET", "test.xml", true);
+    xmlLoader.send();
+    </script>
+</body>
+</html>

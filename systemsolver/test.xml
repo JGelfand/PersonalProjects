@@ -1,0 +1,13 @@
+<system>
+  <line>
+    <term>
+      <id>num</id>
+      <value>1</value>
+    </term>
+    <term>
+      <id>x</id>
+      <value>1</value>
+    </term>
+  </line>
+  <log>*longish string*</log>
+</system>
