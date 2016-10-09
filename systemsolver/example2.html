@@ -12,6 +12,7 @@
     xmlLoader.onreadystatechange= function (){
       if (this.readyState == 4 && this.status == 200) {
         toSys(xmlToTable(this));
+	//console.log(this.responseText);
       }
     }
     xmlLoader.open("GET", "test.xml", true);

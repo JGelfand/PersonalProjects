@@ -55,7 +55,7 @@ function xmlToTable(xmlDoc){
     var terms= lines[0].getElementsByTagName("term");
     var i2;
     for(i2=0;i2<terms.length;i2++){
-      var term = terms[i];
+      var term = terms[i2];
       termID=simpleNodeVal(term.getElementsByTagName("id")[0]);
       newTerm=linFind(termID, idArray)==-1;
       if(newTerm){
