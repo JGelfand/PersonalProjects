@@ -45,7 +45,7 @@ function linFind(element, array){
 }
 function xmlToTable(xmlDoc){
   var tablehtml=""
-  xml=xmlDoc.responseXml;
+  xml=xmlDoc.responseXML;
   var idArray=[];
   idArray.push("num");
   var lines = xml.getElementsByTagName("line");
