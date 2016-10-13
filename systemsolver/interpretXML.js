@@ -44,7 +44,7 @@ function linFind(element, array){
   return -1;
 }
 function xmlToTable(xmlDoc){
-  var tablehtml=""
+  var tablehtml="<table>";
   xml=xmlDoc.responseXML;
   var idArray=[];
   idArray.push("num");
@@ -52,7 +52,7 @@ function xmlToTable(xmlDoc){
   //populate the id array
   var i1;
   for(i1=0;i1<lines.length;i1++){
-    var terms= lines[0].getElementsByTagName("term");
+    var terms= lines[i1].getElementsByTagName("term");
     var i2;
     for(i2=0;i2<terms.length;i2++){
       var term = terms[i2];
@@ -63,6 +63,7 @@ function xmlToTable(xmlDoc){
       }
     }
   }
+	console.log(idArray);
   //initialize the table
   /*tablehtml=tablehtml+"<tr>"
   for(i1=0;i1<=idArray.length;i1++){//1 row for every variable, 1 for the = sign
@@ -74,29 +75,30 @@ function xmlToTable(xmlDoc){
     tablehtml=tablehtml+"<tr>"
     var terms =lines[i1].getElementsByTagName("term");
     termIdArray=[];
-    for(term in terms){
-      termIdArray.push(simpleNodeVal(term.getElementsByTagName("id")));
-    }
     var i2;
+    for(i2=0;i2<terms.length;i2++){
+      termIdArray.push(simpleNodeVal(terms[i2].getElementsByTagName("id")[0]));
+    }
     for(i2=1;i2<idArray.length;i2++){
       tablehtml=tablehtml+"<td>";
       //check if line has a term that matches idArray[i2]
       var termIndex=linFind(idArray[i2], termIdArray);
       //if so, add it to the line. else, blank cell
       if(termIndex!=-1){
-        var idNode=terms[i2].getElementsByTagName("id");
-        var valNode=terms[i2].getElementsByTagName("value");
+        var idNode=terms[i2].getElementsByTagName("id")[0];
+        var valNode=terms[i2].getElementsByTagName("value")[0];
         tablehtml=tablehtml+simpleNodeVal(valNode)+simpleNodeVal(idNode);
-        if(i2<idArray.length-1){tablehtml=tablehtml+"+";}
+        tablehtml=tablehtml+"+";
       }
       tablehtml=tablehtml+"</td>"
     }
     //end line with = num
-    tablehtml=tablehtml+"<td>=";
+    tablehtml=tablehtml.slice(0,-6)+"</td><td>=";
     var numNode= terms[0];
-    var numNodeVal=numNode.getElementsByTagName("value");
+    var numNodeVal=numNode.getElementsByTagName("value")[0];
     tablehtml=tablehtml+simpleNodeVal(numNodeVal);
     tablehtml=tablehtml+"</td>"+"</tr>";
-    return tablehtml;
   }
+	tablehtml=tablehtml+"</table>";
+	return tablehtml;
 }

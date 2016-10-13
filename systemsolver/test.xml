@@ -9,5 +9,19 @@
       <value>1</value>
     </term>
   </line>
+	<line>
+		<term>
+			<id>num</id>
+			<value>0</value>
+		</term>
+		<term>
+			<id>y</id>
+			<value>1</value>
+		</term>
+		<term>
+			<id>x</id>
+			<value>1</value>
+		</term>
+	</line>
   <log>*longish string*</log>
 </system>
