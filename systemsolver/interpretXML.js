@@ -74,26 +74,20 @@ function xmlToTable(xmlDoc){
   for(i1=0;i1<lines.length;i1++){
     tablehtml=tablehtml+"<tr>"
     var terms =lines[i1].getElementsByTagName("term");
-    termIdArray=[];
     var i2;
-    for(i2=0;i2<terms.length;i2++){
-      termIdArray.push(simpleNodeVal(terms[i2].getElementsByTagName("id")[0]));
-    }
-    for(i2=1;i2<idArray.length;i2++){
-      tablehtml=tablehtml+"<td>";
-      //check if line has a term that matches idArray[i2]
-      var termIndex=linFind(idArray[i2], termIdArray);
-      //if so, add it to the line. else, blank cell
-      if(termIndex!=-1){
-        var idNode=terms[i2].getElementsByTagName("id")[0];
-        var valNode=terms[i2].getElementsByTagName("value")[0];
-        tablehtml=tablehtml+simpleNodeVal(valNode)+simpleNodeVal(idNode);
-        tablehtml=tablehtml+"+";
-      }
-      tablehtml=tablehtml+"</td>"
-    }
+    for(i2=1;i2<terms.length;i2++){
+			tablehtml=tablehtml+"<td>";
+			var term=terms[i2];
+			var termVal=simpleNodeVal(term.getElementsByTagName("value")[0]);
+			if(termVal!=0){
+				tablehtml=tablehtml+"+"+termVal;
+				var termId= simpleNodeVal(term.getElementsByTagName("id")[0]);
+				tablehtml= tablehtml+termId;
+			}
+			tablehtml=tablehtml+"</td>";
+		}
     //end line with = num
-    tablehtml=tablehtml.slice(0,-6)+"</td><td>=";
+    tablehtml=tablehtml+"<td>=";
     var numNode= terms[0];
     var numNodeVal=numNode.getElementsByTagName("value")[0];
     tablehtml=tablehtml+simpleNodeVal(numNodeVal);
