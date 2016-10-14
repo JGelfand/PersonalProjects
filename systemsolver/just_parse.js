@@ -1,4 +1,18 @@
 //meant to parse lines into an array of terms in an xml file. The webpage will send the file to a server, where php scripts will take it from there. I should be able to grab most of this code from the existing systemsolver stuff.
+/* target format: 
+<system>
+	<line>
+	</line>
+	...
+	<log></log>
+	<newline>
+		<newterm side=("l"|"r")>
+			<value>?</value>
+			<id>?<id>
+		</newterm>
+		...
+	</newline>
+</system> */
 function divToMul(match, p1, offset, string)
 {
   var divisor = Number(p1);
@@ -24,13 +38,17 @@ var num ="(?:\\d*\\.\\d+|\\d+)(?!\\d)";
 var term = "(?:[+\\-]?(?:(?:"+num+")*[a-zA-Z]|"+num+")[/*])*(?:\\d*[a-zA-Z]|"+num+")(?=[+\\-]|$|[*+\\-/]\\(|[)=])";
 function addToLine(myTerm, myLine, left)//variables count totals on left, constants on right
 {
-  var myId;
+	//instead of pushing to a line array, i want to write these inside a <newline> tag in a string representing an existing xml file. 
+  var xml="<system></system>";//placeholder for the xml string
+	var myId;
   var myVal;
   var idMatch = myTerm.match(/[a-zA-Z]/);
   if(idMatch===null){myId = "num";}
   else{myId= idMatch[0];}
   myVal=Number(myTerm.match(new RegExp(num))[0]);
   //console.log("Term = "+myTerm+"\nValue = "+myVal);
+	xml=xml.splice(0,-9);//remove the </system> tag from the end in preparation for writing to the end- move this elsewhere
+	
   if(myTerm.search(/\-/)!=-1){myVal=myVal*-1;}
   for(i2=0;i2<myLine.length;i2++)
   {
